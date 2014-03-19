@@ -1,8 +1,12 @@
 # TODO: Use MPG instead of Total Minutes
 
 library(dataframes2xls)
-players <- read.csv('2014_per_game.csv')
+
+players <- read.csv('data/2014_per_game.csv')
+
+# Only consider players which average over 20 MPG
 players <- players[players$MP > 20,c("Player", "Pos", "Tm", "FG", "FGA", "FG.", "X3P", "FT", "FTA", "FT.", "TRB", "AST", "STL", "BLK", "TOV", "PTS")]
+
 players$FGS <- players$FGA / max(players$FGA) * (players$FG. - median(players$FG.))/(quantile(players$FG., 0.75) - quantile(players$FG., 0.25))
 players$FTS <- players$FTA / max(players$FTA) * (players$FT. - median(players$FT.))/(quantile(players$FT., 0.75) - quantile(players$FT., 0.25))
 players$FG_SD <- (players$FGS - median(players$FGS))/(quantile(players$FGS, 0.75) - quantile(players$FGS, 0.25))
@@ -14,10 +18,14 @@ players$BLK_SD <- (players$BLK - median(players$BLK))/(quantile(players$BLK, 0.7
 players$TOV_SD <- -(players$TOV - median(players$TOV))/(quantile(players$TOV, 0.75) - quantile(players$TOV, 0.25))
 players$AST_SD <- (players$AST - median(players$AST))/(quantile(players$AST, 0.75) - quantile(players$AST, 0.25))
 players$TRB_SD <- (players$TRB - median(players$TRB))/(quantile(players$TRB, 0.75) - quantile(players$TRB, 0.25))
-#players$CFOS <- players$BLK_SD + players$STL_SD + players$TRB_SD + players$AST_SD + players$PTS_SD + players$X3P_SD + players$TOV_SD + players$FT_SD + players$FG_SD
+# players$CFOS <- players$BLK_SD + players$STL_SD + players$TRB_SD + players$AST_SD + players$PTS_SD + players$X3P_SD + players$TOV_SD + players$FT_SD + players$FG_SD
+# Ignoring FT and PTS for Head-to-Head
 players$CFOS <- players$BLK_SD + players$STL_SD + players$TRB_SD + players$X3P_SD + players$TOV_SD + players$FG_SD
+
 players.for.print <- players[,c("Player", "CFOS", "PTS_SD", "FG_SD", "FT_SD", "X3P_SD", "AST_SD", "TRB_SD", "STL_SD", "BLK_SD", "TOV_SD")]
-write.xls(players.for.print, "ranking.xls")
+write.xls(players.for.print, "results/ranking.xls")
+
+# TODO: Rewrite above script to use this function. Currently just for interactive use.
 calculate.score <- function(fg., fga, ft., fta, x3p, pts, stl, blk, tov, ast, trb) {
 	player.fgs <- fga / max(players$FGA) * (fg. - median(players$FG.))/(quantile(players$FG., 0.75) - quantile(players$FG., 0.25))
 	player.fts <- fta / max(players$FTA) * (ft. - median(players$FT.))/(quantile(players$FT., 0.75) - quantile(players$FT., 0.25))
